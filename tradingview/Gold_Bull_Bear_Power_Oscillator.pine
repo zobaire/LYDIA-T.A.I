@@ -1,0 +1,252 @@
+//@version=5
+indicator("Gold Bull/Bear Power Oscillator", overlay=false, max_labels_count=500)
+
+// ============ INPUTS ============
+grp1 = "Bull/Bear Settings"
+fastLen   = input.int(5, "Fast Smoothing", group=grp1)
+slowLen   = input.int(34, "Slow Smoothing", group=grp1)
+momLen    = input.int(14, "Momentum Length", group=grp1)
+
+grp2 = "Fibonacci Levels"
+useFib     = input.bool(true, "Show Fibonacci Reference Lines", group=grp2)
+fibLevels  = input.string("0.236, 0.382, 0.5, 0.618, 0.786", "Levels (comma separated)", group=grp2)
+
+grp3 = "Labels"
+showLabels = input.bool(true, "Show H Bull / H Bear Labels", group=grp3)
+minBarsBetweenLbl = input.int(8, "Min Bars Between Labels", group=grp3)
+
+grp4 = "Visuals"
+useGradient = input.bool(true, "Gradient Fill", group=grp4)
+
+grp5 = "Scalper Signals"
+showEntries     = input.bool(true, "Show Entry Signals", group=grp5)
+entryThreshold  = input.int(60, "Entry Confidence %", minval=50, maxval=90, group=grp5)
+lookback        = input.int(50, "Probability Lookback", minval=10, maxval=200, group=grp5)
+showConfidence  = input.bool(true, "Show Confidence Band", group=grp5)
+showBanner      = input.bool(true, "Show Big Entry Banner", group=grp5)
+showBgTint      = input.bool(true, "Tint Background by Trend", group=grp5)
+
+grp6 = "Trade Plan (ATR)"
+showTradePlan = input.bool(true, "Show TP/SL Suggestion", group=grp6)
+atrLen        = input.int(14, "ATR Length", group=grp6)
+atrMultSL     = input.float(1.5, "Stop-Loss (ATR mult)", group=grp6)
+riskReward    = input.float(2.0, "Risk:Reward Ratio", group=grp6)
+
+// ============ BULL / BEAR POWER CALC ============
+emaBase = ta.ema(close, slowLen)
+
+bullRaw = high - emaBase
+bearRaw = emaBase - low
+
+bullLine = ta.ema(bullRaw, fastLen)
+bearLine = ta.ema(bearRaw, fastLen)
+
+bullPlot =  bullLine
+bearPlot = -bearLine
+netPower = bullPlot + bearPlot
+
+// ============ MOMENTUM ============
+mom = ta.mom(close, momLen)
+momGrowing = mom > mom[1]
+momState = mom > 0 ? (momGrowing ? "MOM > 0 and Growing" : "MOM > 0 but Falling") : (momGrowing ? "MOM < 0 but Rising" : "MOM < 0 and Falling")
+
+// ============ FIBONACCI REFERENCE ============
+var float fibHigh = na
+var float fibLow  = na
+
+if na(fibHigh) or netPower > fibHigh
+    fibHigh := netPower
+if na(fibLow) or netPower < fibLow
+    fibLow := netPower
+
+fibHigh := math.max(fibHigh, netPower)
+fibLow  := math.min(fibLow,  netPower)
+
+fibRange = fibHigh - fibLow
+fibMid   = (fibHigh + fibLow) / 2
+
+fibArr = str.split(fibLevels, ",")
+fibVals = array.new_float(0)
+for i = 0 to array.size(fibArr) - 1
+    array.push(fibVals, str.tonumber(str.trim(array.get(fibArr, i))))
+
+// ============ PLOTS ============
+hline(0, "Zero", color=color.new(color.gray, 50))
+
+if useFib
+    for i = 0 to array.size(fibVals) - 1
+        lvl = array.get(fibVals, i)
+        line.new(bar_index, fibMid + fibRange * lvl, bar_index, fibMid + fibRange * lvl, color=color.new(color.gray, 80), width=1)
+        line.new(bar_index, fibMid - fibRange * lvl, bar_index, fibMid - fibRange * lvl, color=color.new(color.gray, 80), width=1)
+
+plot(bullPlot, "Bull Power", color=color.new(color.blue, 0), linewidth=2)
+plot(bearPlot, "Bear Power", color=color.new(color.red, 0), linewidth=2)
+
+histColor = netPower > 0 ? color.new(color.teal, 40) : color.new(color.maroon, 40)
+plot(netPower, "Net Power (Histogram)", color=histColor, style=plot.style_columns)
+
+plotBullFill = plot(bullPlot, "Bull Fill Ref", display=display.none)
+plotBearFill = plot(bearPlot, "Bear Fill Ref", display=display.none)
+fill(plotBullFill, plotBearFill, color=useGradient ? color.new(color.blue, 85) : color.new(color.blue, 100), title="Bull/Bear Fill")
+
+// ============ ATR / TRADE PLAN ============
+atrVal = ta.atr(atrLen)
+slDistance = atrVal * atrMultSL
+tpDistance = slDistance * riskReward
+
+// Price-based levels for the current bar
+entryPrice = close
+slLong  = entryPrice - slDistance
+tpLong  = entryPrice + tpDistance
+slShort = entryPrice + slDistance
+tpShort = entryPrice - tpDistance
+
+// ============ TREND STATE ============
+trendState = bullPlot > math.abs(bearPlot) ? "H Bull" : "H Bear"
+trendChanged = trendState != trendState[1]
+
+var int lastLblBar = na
+canLabel = na(lastLblBar) or (bar_index - lastLblBar >= minBarsBetweenLbl)
+
+if showLabels and trendChanged and canLabel
+    lblColor = trendState == "H Bull" ? color.blue : color.maroon
+    label.new(bar_index, netPower, trendState, style=label.style_label_down, color=lblColor, textcolor=color.white, size=size.small)
+    lastLblBar := bar_index
+
+// ============ SCALPER ENTRY SIGNALS ============
+// ---- Strength & probability metrics ----
+totalPower = math.abs(bullPlot) + math.abs(bearPlot)
+bullPct = totalPower > 0 ? math.abs(bullPlot) / totalPower * 100 : 50
+bearPct = totalPower > 0 ? math.abs(bearPlot) / totalPower * 100 : 50
+
+// Count net-bull vs net-bear bars over the lookback window
+netBullBars = 0
+netBearBars = 0
+for i = 0 to lookback - 1
+    if bullPlot[i] > math.abs(bearPlot[i])
+        netBullBars += 1
+    else
+        netBearBars += 1
+
+// Momentum strength (0..1) scaled by how strongly it's pushing
+momMag = math.abs(mom) / (ta.atr(momLen) + 1e-10)
+momScore = mom > 0 ? math.min(1.0, momMag) : 0.0
+momBearScore = mom < 0 ? math.min(1.0, momMag) : 0.0
+
+trendScore = trendState == "H Bull" ? 1.0 : 0.0
+trendBearScore = trendState == "H Bear" ? 1.0 : 0.0
+
+barScore = netBullBars / lookback
+barBearScore = netBearBars / lookback
+
+// Weighted probability (bull vs bear)
+probBull = (momScore * 0.3 + trendScore * 0.3 + barScore * 0.4) * 100
+probBear = (momBearScore * 0.3 + trendBearScore * 0.3 + barBearScore * 0.4) * 100
+
+// Confidence band (simple spread based on consistency)
+dominance = math.max(netBullBars, netBearBars) / lookback
+bandLow  = math.max(0, probBull - (1 - dominance) * 15)
+bandHigh = math.min(100, probBull + (1 - dominance) * 15)
+
+// Confidence level
+confLevel = dominance >= 0.7 ? "High" : dominance >= 0.6 ? "Medium" : "Low"
+
+// ---- Entry trigger: only fire when confidence >= threshold ----
+// Require confluence: trend agrees with probability direction AND
+// momentum is pushing the same way (not fighting the trend).
+bullEntry = probBull >= entryThreshold and trendScore == 1.0 and momScore > 0.3
+bearEntry = probBear >= entryThreshold and trendBearScore == 1.0 and momBearScore > 0.3
+
+// Debounce so we don't spam arrows every bar
+var int lastEntryBar = na
+entryAllowed = na(lastEntryBar) or (bar_index - lastEntryBar >= 5)
+
+// ---- Draw BIG entry signals ----
+if showEntries and entryAllowed
+    if bullEntry
+        label.new(bar_index, netPower + fibRange * 0.15, "BUY", style=label.style_label_up, color=color.new(color.green, 0), textcolor=color.white, size=size.large, textalign=text.align_center)
+        line.new(bar_index, netPower, bar_index + 3, netPower, color=color.green, width=3)
+        lastEntryBar := bar_index
+    if bearEntry
+        label.new(bar_index, netPower - fibRange * 0.15, "SELL", style=label.style_label_down, color=color.new(color.red, 0), textcolor=color.white, size=size.large, textalign=text.align_center)
+        line.new(bar_index, netPower, bar_index + 3, netPower, color=color.red, width=3)
+        lastEntryBar := bar_index
+
+// ---- Big entry banner (top of pane) ----
+if showBanner and barstate.islast
+    if probBull >= entryThreshold
+        label.new(bar_index, fibHigh, "LONG " + str.tostring(probBull, "#.0") + "%", style=label.style_label_down, color=color.new(color.green, 0), textcolor=color.white, size=size.huge)
+    else if probBear >= entryThreshold
+        label.new(bar_index, fibLow, "SHORT " + str.tostring(probBear, "#.0") + "%", style=label.style_label_up, color=color.new(color.red, 0), textcolor=color.white, size=size.huge)
+
+// ---- Background tint by trend ----
+bgcolor(showBgTint ? (trendState == "H Bull" ? color.new(color.blue, 90) : color.new(color.maroon, 90)) : na)
+
+// ---- Trade plan labels on the price chart (overlay pane) ----
+// Note: these only show on the last bar as reference levels.
+if showTradePlan and barstate.islast
+    if bullEntry
+        line.new(bar_index, tpLong, bar_index + 5, tpLong, color=color.new(color.green, 0), width=2, style=line.style_dashed)
+        line.new(bar_index, slLong, bar_index + 5, slLong, color=color.new(color.red, 0), width=2, style=line.style_dashed)
+        label.new(bar_index + 5, tpLong, "TP " + str.tostring(tpLong, "#.##"), style=label.style_label_left, color=color.green, textcolor=color.white, size=size.small)
+        label.new(bar_index + 5, slLong, "SL " + str.tostring(slLong, "#.##"), style=label.style_label_left, color=color.red, textcolor=color.white, size=size.small)
+    if bearEntry
+        line.new(bar_index, tpShort, bar_index + 5, tpShort, color=color.new(color.green, 0), width=2, style=line.style_dashed)
+        line.new(bar_index, slShort, bar_index + 5, slShort, color=color.new(color.red, 0), width=2, style=line.style_dashed)
+        label.new(bar_index + 5, tpShort, "TP " + str.tostring(tpShort, "#.##"), style=label.style_label_left, color=color.green, textcolor=color.white, size=size.small)
+        label.new(bar_index + 5, slShort, "SL " + str.tostring(slShort, "#.##"), style=label.style_label_left, color=color.red, textcolor=color.white, size=size.small)
+
+// ============ INFO / DEBUG TABLE ============
+var table infoTable = table.new(position.top_right, 2, 13, border_width=1, border_color=color.gray)
+if barstate.islast
+    table.cell(infoTable, 0, 0, "GOLD POWER", text_color=color.white, bgcolor=color.new(color.gray, 20), text_size=size.small)
+    table.cell(infoTable, 1, 0, "Value", text_color=color.white, bgcolor=color.new(color.gray, 20), text_size=size.small)
+
+    table.cell(infoTable, 0, 1, "Momentum", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 1, momState, text_color=color.white, bgcolor=mom > 0 ? color.new(color.green, 30) : color.new(color.red, 30), text_size=size.small)
+
+    table.cell(infoTable, 0, 2, "Trend", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 2, trendState, text_color=color.white, bgcolor=trendState == "H Bull" ? color.new(color.blue, 30) : color.new(color.maroon, 30), text_size=size.small)
+
+    table.cell(infoTable, 0, 3, "Bull Strength", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 3, str.tostring(bullPct, "#.0") + "%", text_color=color.white, bgcolor=color.new(color.blue, 30), text_size=size.small)
+
+    table.cell(infoTable, 0, 4, "Bear Strength", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 4, str.tostring(bearPct, "#.0") + "%", text_color=color.white, bgcolor=color.new(color.red, 30), text_size=size.small)
+
+    table.cell(infoTable, 0, 5, "Bars (n=" + str.tostring(lookback) + ")", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 5, "B " + str.tostring(netBullBars) + " / B " + str.tostring(netBearBars), text_color=color.white, bgcolor=color.new(color.gray, 30), text_size=size.small)
+
+    table.cell(infoTable, 0, 6, "Next Probable Trade", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 6, "BUY " + str.tostring(probBull, "#.0") + "%", text_color=color.white, bgcolor=probBull >= 50 ? color.new(color.green, 30) : color.new(color.red, 30), text_size=size.small)
+
+    table.cell(infoTable, 0, 7, "Prob Band", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 7, str.tostring(bandLow, "#.0") + "–" + str.tostring(bandHigh, "#.0") + "%", text_color=color.white, bgcolor=color.new(color.gray, 30), text_size=size.small)
+
+    table.cell(infoTable, 0, 8, "Confidence", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 8, confLevel, text_color=color.white, bgcolor=confLevel == "High" ? color.new(color.green, 30) : confLevel == "Medium" ? color.new(color.orange, 30) : color.new(color.red, 30), text_size=size.small)
+
+    table.cell(infoTable, 0, 9, "Net Power", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 9, str.tostring(netPower, "#.##"), text_color=color.white, bgcolor=netPower > 0 ? color.new(color.teal, 30) : color.new(color.maroon, 30), text_size=size.small)
+
+    table.cell(infoTable, 0, 10, "Entry Signal", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 10, bullEntry ? "LONG" : bearEntry ? "SHORT" : "WAIT", text_color=color.white, bgcolor=bullEntry ? color.new(color.green, 20) : bearEntry ? color.new(color.red, 20) : color.new(color.gray, 30), text_size=size.small)
+
+    table.cell(infoTable, 0, 11, "Target", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 11, "60% win-rate", text_color=color.white, bgcolor=color.new(color.gray, 30), text_size=size.small)
+
+    table.cell(infoTable, 0, 12, "Trade Plan", text_color=color.white, bgcolor=color.new(color.gray, 60), text_size=size.small)
+    table.cell(infoTable, 1, 12, bullEntry ? ("TP " + str.tostring(tpLong, "#.##") + " / SL " + str.tostring(slLong, "#.##")) : bearEntry ? ("TP " + str.tostring(tpShort, "#.##") + " / SL " + str.tostring(slShort, "#.##")) : "—", text_color=color.white, bgcolor=color.new(color.gray, 30), text_size=size.small)
+
+// ============ ALERTS ============
+// alertcondition() requires a const message, so we use alert() instead
+// for the dynamic confidence strings. alert() fires once per confirmed bar.
+if barstate.isconfirmed
+    if trendChanged and trendState == "H Bull"
+        alert("Gold momentum switched to H Bull", alert.freq_once_per_bar)
+    if trendChanged and trendState == "H Bear"
+        alert("Gold momentum switched to H Bear", alert.freq_once_per_bar)
+    if bullEntry
+        alert("Gold LONG entry signal fired (" + str.tostring(probBull, "#.0") + "% confidence)", alert.freq_once_per_bar)
+    if bearEntry
+        alert("Gold SHORT entry signal fired (" + str.tostring(probBear, "#.0") + "% confidence)", alert.freq_once_per_bar)

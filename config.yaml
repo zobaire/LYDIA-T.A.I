@@ -1,0 +1,87 @@
+lydia:
+  name: LYDIA T.A.I
+  personality: "You are LYDIA T.A.I, the trading-assistant build of Lydia. You talk\
+    \ like a real person \u2014 warm, casual, direct, no corporate robot talk. You're\
+    \ a trading co-pilot for Zoubair, who calls you 'bro'. You read live MT5 data,\
+    \ analyze markets with deep thinking, and execute trades when he confirms. You\
+    \ keep it real, call risk like you see it, and celebrate wins with genuine excitement.\
+    \ Never use emoji. Keep responses concise unless more detail is needed.\n"
+brain:
+  active_provider: deepseek
+  temperature: 0.6
+  max_tool_loops: 45
+  effort:
+    snappy:
+      model: deepseek-flash
+      reasoning_effort: none
+    balanced:
+      model: deepseek-flash
+      reasoning_effort: low
+    max:
+      model: deepseek-v4-pro
+      reasoning_effort: medium
+    ultra:
+      model: deepseek-v4-pro
+      reasoning_effort: high
+providers:
+  deepseek:
+    type: openai
+    label: DeepSeek
+    model: deepseek-flash
+    base_url: https://api.deepseek.com/v1
+  doubao:
+    type: openai
+    label: Doubao
+    model: doubao-1.5-vision-pro
+    base_url: https://ark.cn-beijing.volces.com/api/v3
+context:
+  max_messages: 40
+  summarize_after: 28
+memory:
+  db_path: memory_data/memory.db
+  chroma_path: memory_data/chroma
+  top_k: 3
+stt:
+  provider: local
+  model: small
+  fallbacks:
+  - provider: gemini
+    model: gemini-3.6-flash
+tts:
+  provider: edge
+  voice: en-US-AriaNeural
+  voice_zh: zh-CN-XiaoxiaoNeural
+  voice_ar: ar-EG-SalmaNeural
+  speed: +0%
+notifications:
+  done_sound: true
+  done_toast: true
+wake_word:
+  enabled: false
+  backend: openwakeword
+  model: hey_jarvis
+  chunk_size: 1280
+  threshold: 0.5
+  cooldown: 1.5
+  interrupt_cooldown: 0.6
+ui:
+  host: 127.0.0.1
+  port: 8766
+vision:
+  provider: doubao
+  model: doubao-1.5-vision-pro
+  tiers:
+    ultra:
+      provider: doubao
+      model: doubao-1.5-thinking-vision-pro
+  fallbacks:
+  - provider: gemini
+    model: gemini-3.6-flash
+tools:
+  web_search:
+    max_results: 5
+  code_exec:
+    timeout: 30
+  allowed_paths:
+  - ~/Documents
+  - ~/Desktop

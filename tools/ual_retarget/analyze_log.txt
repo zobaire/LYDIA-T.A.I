@@ -1,0 +1,231 @@
+======================================================================
+UAL1_Standard.glb vs character.fbx — READ-ONLY analysis
+======================================================================
+
+[1] Importing UAL GLB...
+00:06:08 | INFO: Data are loaded, start creating Blender stuff
+00:06:08 | INFO: Blender create Mesh node Mannequin
+00:06:11 | INFO: glTF import finished in 2.88s
+UAL armature object: 'Armature'
+--- UAL skeleton (full): 65 bones ---
+root
+  pelvis
+    spine_01
+      spine_02
+        spine_03
+          neck_01
+            Head
+          clavicle_l
+            upperarm_l
+              lowerarm_l
+                hand_l
+                  index_01_l
+                    index_02_l
+                      index_03_l
+                        index_04_leaf_l
+                  middle_01_l
+                    middle_02_l
+                      middle_03_l
+                        middle_04_leaf_l
+                  pinky_01_l
+                    pinky_02_l
+                      pinky_03_l
+                        pinky_04_leaf_l
+                  ring_01_l
+                    ring_02_l
+                      ring_03_l
+                        ring_04_leaf_l
+                  thumb_01_l
+                    thumb_02_l
+                      thumb_03_l
+                        thumb_04_leaf_l
+          clavicle_r
+            upperarm_r
+              lowerarm_r
+                hand_r
+                  index_01_r
+                    index_02_r
+                      index_03_r
+                        index_04_leaf_r
+                  middle_01_r
+                    middle_02_r
+                      middle_03_r
+                        middle_04_leaf_r
+                  pinky_01_r
+                    pinky_02_r
+                      pinky_03_r
+                        pinky_04_leaf_r
+                  ring_01_r
+                    ring_02_r
+                      ring_03_r
+                        ring_04_leaf_r
+                  thumb_01_r
+                    thumb_02_r
+                      thumb_03_r
+                        thumb_04_leaf_r
+    thigh_l
+      calf_l
+        foot_l
+          ball_l
+            ball_leaf_l
+    thigh_r
+      calf_r
+        foot_r
+          ball_r
+            ball_leaf_r
+
+[2] Pistol-related actions in GLB:
+    A_TPose                      frames 0..60  (61 frames)
+    Pistol_Aim_Down              frames 0..4  (5 frames)
+    Pistol_Aim_Neutral           frames 0..4  (5 frames)
+    Pistol_Aim_Up                frames 0..4  (5 frames)
+    Pistol_Idle_Loop             frames 0..40  (41 frames)
+    Pistol_Reload                frames 0..40  (41 frames)
+    Pistol_Shoot                 frames 0..15  (16 frames)
+
+[3] Importing character.fbx (Mixamo rig)...
+FBX version: 7300
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+Mixamo armature object: 'Armature.001'
+--- Mixamo skeleton (full): 65 bones ---
+mixamorig:Hips
+  mixamorig:Spine
+    mixamorig:Spine1
+      mixamorig:Spine2
+        mixamorig:Neck
+          mixamorig:Head
+            mixamorig:HeadTop_End
+        mixamorig:LeftShoulder
+          mixamorig:LeftArm
+            mixamorig:LeftForeArm
+              mixamorig:LeftHand
+                mixamorig:LeftHandThumb1
+                  mixamorig:LeftHandThumb2
+                    mixamorig:LeftHandThumb3
+                      mixamorig:LeftHandThumb4
+                mixamorig:LeftHandIndex1
+                  mixamorig:LeftHandIndex2
+                    mixamorig:LeftHandIndex3
+                      mixamorig:LeftHandIndex4
+                mixamorig:LeftHandMiddle1
+                  mixamorig:LeftHandMiddle2
+                    mixamorig:LeftHandMiddle3
+                      mixamorig:LeftHandMiddle4
+                mixamorig:LeftHandRing1
+                  mixamorig:LeftHandRing2
+                    mixamorig:LeftHandRing3
+                      mixamorig:LeftHandRing4
+                mixamorig:LeftHandPinky1
+                  mixamorig:LeftHandPinky2
+                    mixamorig:LeftHandPinky3
+                      mixamorig:LeftHandPinky4
+        mixamorig:RightShoulder
+          mixamorig:RightArm
+            mixamorig:RightForeArm
+              mixamorig:RightHand
+                mixamorig:RightHandThumb1
+                  mixamorig:RightHandThumb2
+                    mixamorig:RightHandThumb3
+                      mixamorig:RightHandThumb4
+                mixamorig:RightHandIndex1
+                  mixamorig:RightHandIndex2
+                    mixamorig:RightHandIndex3
+                      mixamorig:RightHandIndex4
+                mixamorig:RightHandMiddle1
+                  mixamorig:RightHandMiddle2
+                    mixamorig:RightHandMiddle3
+                      mixamorig:RightHandMiddle4
+                mixamorig:RightHandRing1
+                  mixamorig:RightHandRing2
+                    mixamorig:RightHandRing3
+                      mixamorig:RightHandRing4
+                mixamorig:RightHandPinky1
+                  mixamorig:RightHandPinky2
+                    mixamorig:RightHandPinky3
+                      mixamorig:RightHandPinky4
+  mixamorig:LeftUpLeg
+    mixamorig:LeftLeg
+      mixamorig:LeftFoot
+        mixamorig:LeftToeBase
+          mixamorig:LeftToe_End
+  mixamorig:RightUpLeg
+    mixamorig:RightLeg
+      mixamorig:RightFoot
+        mixamorig:RightToeBase
+          mixamorig:RightToe_End
+
+[4] Mapping check (UAL -> Mixamo):
+    matched: 0   |  missing in UAL: none   |  missing in Mixamo: ['mixamorig_Hips', 'mixamorig_Spine', 'mixamorig_Spine1', 'mixamorig_Spine2', 'mixamorig_Neck', 'mixamorig_Head', 'mixamorig_LeftShoulder', 'mixamorig_LeftArm', 'mixamorig_LeftForeArm', 'mixamorig_LeftHand', 'mixamorig_LeftHandIndex1', 'mixamorig_LeftHandIndex2', 'mixamorig_LeftHandIndex3', 'mixamorig_LeftHandMiddle1', 'mixamorig_LeftHandMiddle2', 'mixamorig_LeftHandMiddle3', 'mixamorig_LeftHandPinky1', 'mixamorig_LeftHandPinky2', 'mixamorig_LeftHandPinky3', 'mixamorig_LeftHandRing1', 'mixamorig_LeftHandRing2', 'mixamorig_LeftHandRing3', 'mixamorig_LeftHandThumb1', 'mixamorig_LeftHandThumb2', 'mixamorig_LeftHandThumb3', 'mixamorig_LeftUpLeg', 'mixamorig_LeftLeg', 'mixamorig_LeftFoot', 'mixamorig_LeftToeBase', 'mixamorig_RightShoulder', 'mixamorig_RightArm', 'mixamorig_RightForeArm', 'mixamorig_RightHand', 'mixamorig_RightHandIndex1', 'mixamorig_RightHandIndex2', 'mixamorig_RightHandIndex3', 'mixamorig_RightHandMiddle1', 'mixamorig_RightHandMiddle2', 'mixamorig_RightHandMiddle3', 'mixamorig_RightHandPinky1', 'mixamorig_RightHandPinky2', 'mixamorig_RightHandPinky3', 'mixamorig_RightHandRing1', 'mixamorig_RightHandRing2', 'mixamorig_RightHandRing3', 'mixamorig_RightHandThumb1', 'mixamorig_RightHandThumb2', 'mixamorig_RightHandThumb3', 'mixamorig_RightUpLeg', 'mixamorig_RightLeg', 'mixamorig_RightFoot', 'mixamorig_RightToeBase']
+    UAL bones NOT in map (will be skipped): ['ball_leaf_l', 'ball_leaf_r', 'index_04_leaf_l', 'index_04_leaf_r', 'middle_04_leaf_l', 'middle_04_leaf_r', 'pinky_04_leaf_l', 'pinky_04_leaf_r', 'ring_04_leaf_l', 'ring_04_leaf_r', 'root', 'thumb_04_leaf_l', 'thumb_04_leaf_r']
+
+[5] Rest-pose axis sanity (world head offset of UAL vs Mixamo):
+    UAL: Head rest head @ (0.000, -0.005, 1.569)
+
+Done. Nothing was written to disk.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

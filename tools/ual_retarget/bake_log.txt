@@ -1,0 +1,102 @@
+======================================================================
+UAL pistol clips -> Mixamo rig retarget bake
+======================================================================
+Output dir: C:\Users\book\Desktop\fate's-pair\animations\GUN_ANIMATIONS\ual_pistol
+
+[1] Importing UAL GLB...
+00:08:58 | INFO: Data are loaded, start creating Blender stuff
+00:08:58 | INFO: Blender create Mesh node Mannequin
+00:09:01 | INFO: glTF import finished in 2.83s
+  UAL armature: 'Armature'
+[2] Importing Mixamo character.fbx...
+FBX version: 7300
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+WARNING: User property type 'Short' is not supported
+  Mixamo armature: 'Armature.001'
+
+[3] Rest-pose sanity (both should be humanoid, Z-up):
+    UAL: Head rest @ (0.000, -0.005, 1.569)
+    UAL: hand_r rest @ (-0.739, 0.065, 1.441)
+    Mixamo: Head rest @ (0.000, 0.017, 1.544)
+    Mixamo: mixamorig:RightHand rest @ (-0.690, 0.035, 1.374)
+
+[4] Validating bone map...
+  all 52 bone pairs present in both rigs
+
+[5] Baking clips...
+  baking 'Pistol_Shoot': frames 0..15 (16) over 52 bones
+Traceback (most recent call last):
+  File "C:\Users\book\Desktop\Lydia\tools\ual_retarget\bake_ual.py", line 245, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\book\Desktop\Lydia\tools\ual_retarget\bake_ual.py", line 221, in main
+    ok, info = bake_one_clip(clip, ual_arm, mix_arm, pairs)
+               ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\book\Desktop\Lydia\tools\ual_retarget\bake_ual.py", line 158, in bake_one_clip
+    for fc in tgt_action.fcurves:
+              ^^^^^^^^^^^^^^^^^^
+AttributeError: 'Action' object has no attribute 'fcurves'
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)

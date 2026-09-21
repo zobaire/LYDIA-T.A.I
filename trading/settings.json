@@ -1,0 +1,12 @@
+{
+  "smc_enabled": true,
+  "smc_min_score": 3,
+  "smc_timeframe": "M15",
+  "smc_htf": "H1",
+  "smc_draw_zones": true,
+  "smc_min_rr": 2.0,
+  "alerts_active_only": true,
+  "watch_enabled": true,
+  "watch_min_score": 7,
+  "watch_interval": 60
+}

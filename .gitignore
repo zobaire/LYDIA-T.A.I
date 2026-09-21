@@ -1,0 +1,43 @@
+# ---- Secrets ----
+.env
+.env.bak
+*.ppn
+*.key
+*.pem
+memory_data/
+memory.json
+spotify_token.json
+
+# ---- Local runtime data ----
+logs/
+imports/
+user_data/
+*.log
+
+# ---- Backups (contain .env copies) ----
+_phase1_backup/
+_phase2_backup/
+_port_change_backup/
+*.bak
+
+# ---- Python ----
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# ---- Scratch / debug ----
+test_spot.py
+check_spot_debug.py
+out.txt
+_smc_test.py
+write_test.txt
+*.tmp
+
+# ---- OS junk ----
+Thumbs.db
+Desktop.ini
+.DS_Store

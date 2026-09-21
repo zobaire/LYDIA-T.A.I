@@ -1,0 +1,44 @@
+00:02.750  bpy.rna          | WARNING current value '63' matches no enum in 'EnumProperty', 'object_types', 'default'
+00:02.750  bpy.rna          | WARNING current value '63' matches no enum in 'EnumProperty', 'object_types', 'default'
+use_selection | default: False
+use_visible | default: False
+use_active_collection | default: False
+collection | default: 
+global_scale | default: 1.0
+apply_unit_scale | default: True
+apply_scale_options | default: FBX_SCALE_NONE
+use_space_transform | default: True
+bake_space_transform | default: False
+object_types | default: 
+use_mesh_modifiers | default: True
+use_mesh_modifiers_render | default: True
+mesh_smooth_type | default: OFF
+colors_type | default: SRGB
+prioritize_active_color | default: False
+use_subsurf | default: False
+use_mesh_edges | default: False
+use_tspace | default: False
+use_triangles | default: False
+use_custom_props | default: False
+add_leaf_bones | default: True
+primary_bone_axis | default: Y
+secondary_bone_axis | default: X
+use_armature_deform_only | default: False
+armature_nodetype | default: NULL
+bake_anim | default: True
+bake_anim_use_all_bones | default: True
+bake_anim_use_nla_strips | default: True
+bake_anim_use_all_actions | default: True
+bake_anim_force_startend_keying | default: True
+bake_anim_step | default: 1.0
+bake_anim_simplify_factor | default: 1.0
+path_mode | default: AUTO
+embed_textures | default: False
+batch_mode | default: OFF
+use_batch_own_dir | default: True
+use_metadata | default: True
+axis_forward | default: -Z
+axis_up | default: Y
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
