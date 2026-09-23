@@ -43,6 +43,22 @@ _smc_test.py
 write_test.txt
 *.tmp
 
+# ---- Not part of the backend (kept locally, never pushed) ----
+# Repo is backend-only: no docs, no scratch, no unrelated toolsets.
+tools/ual_retarget/
+bin/
+ui/vendor/3d-force-graph.min.js
+ui/_crop.py
+ui/_extract.py
+ui/_extracted.js
+ui/indexV2.backup.html
+ui/indexV2.step1.backup.html
+
+# Docs stay local (personal notes / working plans, not backend)
+*.md
+trading_playbook.md
+UPGRADE_PLAN.md
+
 # ---- OS junk ----
 Thumbs.db
 Desktop.ini
