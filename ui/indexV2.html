@@ -615,7 +615,7 @@
   .mk-q.gear:hover{color:var(--paper);border-color:var(--accent-dim);background:rgba(245,245,248,0.06);box-shadow:0 0 14px rgba(138,138,150,0.35);}
   #settings{position:fixed;inset:0;z-index:92;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.62);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);}
   #settings.show{display:flex;animation:rise .15s ease both;}
-  .st-box{width:min(460px,calc(100vw - 40px));background:var(--panel-solid);border:1px solid var(--line-strong);border-radius:18px;box-shadow:var(--shadow-deep),0 0 40px rgba(158,158,170,0.2);overflow:hidden;}
+  .st-box{width:min(560px,calc(100vw - 40px));background:var(--panel-solid);border:1px solid var(--line-strong);border-radius:18px;box-shadow:var(--shadow-deep),0 0 40px rgba(158,158,170,0.2);overflow:hidden;}
   .st-title{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:3px;color:var(--dimmer);padding:13px 16px;border-bottom:1px solid var(--line);}
   .st-rows{display:flex;flex-direction:column;gap:9px;padding:14px 16px;max-height:62vh;overflow-y:auto;}
   .st-rows::-webkit-scrollbar{width:4px;}.st-rows::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:4px;}
@@ -627,13 +627,33 @@
   .st-switch::after{content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:var(--dimmer);transition:all .18s;}
   .st-switch.on{background:var(--accent-dim);border-color:var(--accent-dim);}
   .st-switch.on::after{left:23px;background:#fff;box-shadow:0 0 10px rgba(245,245,248,0.85);}
-  .st-foot{display:flex;justify-content:flex-end;padding:0 16px 16px;}
+  .st-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 16px 16px;}
   .st-close{border:1px solid var(--accent-dim);background:var(--accent-dim);color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:2px;padding:9px 18px;border-radius:10px;cursor:pointer;transition:all .15s;}
   .st-close:hover{background:var(--accent);border-color:var(--accent);box-shadow:0 0 16px rgba(138,138,150,0.5);}
   .st-numwrap{flex:none;display:flex;align-items:center;gap:5px;}
   .st-numinput{width:66px;background:rgba(255,255,255,0.06);border:1px solid var(--line);color:var(--paper);padding:6px 8px;outline:none;font:11px var(--mono);border-radius:8px;text-align:right;transition:border-color .2s,box-shadow .2s;}
   .st-numinput:focus{border-color:var(--accent-dim);box-shadow:0 0 0 3px rgba(138,138,150,0.15);}
   .st-numunit{font-family:var(--mono);font-size:8.5px;color:var(--dimmer);letter-spacing:.5px;}
+  .st-group{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:2.5px;color:var(--dim);padding:10px 2px 2px;border-bottom:1px solid var(--line);margin-top:2px;}
+  .st-group:first-child{margin-top:0;padding-top:2px;}
+  .st-select{flex:none;background:rgba(255,255,255,0.06);border:1px solid var(--line);color:var(--paper);padding:6px 8px;outline:none;font:11px var(--mono);border-radius:8px;cursor:pointer;transition:border-color .2s,box-shadow .2s;max-width:170px;}
+  .st-select:focus{border-color:var(--accent-dim);box-shadow:0 0 0 3px rgba(138,138,150,0.15);}
+  .st-select option{background:var(--panel-solid);color:var(--paper);}
+  .st-chips{flex:none;display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;max-width:190px;}
+  .st-chip{border:1px solid var(--line);background:rgba(255,255,255,0.05);color:var(--dimmer);font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.5px;padding:5px 8px;border-radius:8px;cursor:pointer;transition:all .15s;}
+  .st-chip:hover{border-color:var(--accent-dim);color:var(--paper);}
+  .st-chip.on{background:var(--accent-dim);border-color:var(--accent-dim);color:#fff;box-shadow:0 0 10px rgba(138,138,150,0.45);}
+  .st-time{flex:none;background:rgba(255,255,255,0.06);border:1px solid var(--line);color:var(--paper);padding:6px 8px;outline:none;font:11px var(--mono);border-radius:8px;cursor:pointer;transition:border-color .2s,box-shadow .2s;}
+  .st-time:focus{border-color:var(--accent-dim);box-shadow:0 0 0 3px rgba(138,138,150,0.15);}
+  .st-time::-webkit-calendar-picker-indicator{filter:invert(.7);cursor:pointer;}
+  .st-ctlgroup{flex:none;display:flex;align-items:center;gap:6px;}
+  .st-test{border:1px solid var(--line);background:transparent;color:var(--dimmer);font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:1px;padding:6px 7px;border-radius:8px;cursor:pointer;transition:all .15s;}
+  .st-test:hover{color:var(--paper);border-color:var(--accent-dim);box-shadow:0 0 10px rgba(138,138,150,0.35);}
+  .st-test:disabled{opacity:.45;cursor:default;}
+  .st-empty{font-family:var(--mono);font-size:10px;color:var(--dimmer);letter-spacing:1px;padding:20px 4px;text-align:center;}
+  .st-reset{border:1px solid var(--line);background:transparent;color:var(--dimmer);font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:1.5px;padding:8px 13px;border-radius:10px;cursor:pointer;transition:all .15s;}
+  .st-reset:hover{color:var(--down);border-color:rgba(255,82,82,0.5);box-shadow:0 0 12px rgba(255,82,82,0.25);}
+  .st-hint{font-family:var(--mono);font-size:9px;color:var(--dimmer);letter-spacing:.5px;margin-right:auto;}
   .st-watch{border-top:1px solid var(--line);padding:12px 16px;display:flex;flex-direction:column;gap:8px;}
   .st-watch-head{display:flex;align-items:center;gap:10px;}
   .st-watch-title{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:2.5px;color:var(--dimmer);}
@@ -1003,6 +1023,7 @@
       <div class="st-watch-alerts" id="watch-alerts"><div class="st-watch-empty">No alerts yet.</div></div>
     </div>
     <div class="st-foot">
+      <button type="button" id="st-reset" class="st-reset" title="Restore every setting to its shipped default">RESET TO DEFAULTS</button>
       <button type="button" id="st-close" class="st-close">Done</button>
     </div>
   </div>
@@ -1375,6 +1396,10 @@ function handle(evt){
       break;
     case 'model_msg':
       showToast(evt.text||'Model updated.');
+      break;
+    case 'settings':
+      // Another tab (or the backend itself) changed a setting.
+      if(evt.values){ stValues=evt.values; stRepaint(); }
       break;
     case 'schedule': renderSchedule(evt.events); break;
     case 'schedule_msg': $('schedule-msg').textContent=evt.text; break;
@@ -2255,112 +2280,291 @@ document.addEventListener('click', e=>{
   }
 });
 
-/* ---------- Settings (extensible; persisted) ---------- */
-const SETTINGS_DEFS = [
-  { id:'alertsActiveOnly', label:'Alerts: active market only', desc:'Only show movement alerts for the market you are currently viewing. Turn off to see alerts for every market.', type:'toggle', default:true },
-  { id:'smcEnabled', label:'SMC strategy reasoning', desc:'Let Lydia read the market with Smart Money Concepts (order blocks, fair value gaps, breaks of structure) and propose entries with invalidation levels. Off by default — flip it on to let her reason with structure levels.', type:'toggle', default:false },
-  { id:'watchEnabled', label:'Watch mode: auto-scan setups', desc:'Continuously scan your watchlist for high-score SMC setups and ping you the moment one appears (score 5+, i.e. B-grade or better). Runs in the background — no need to watch the chart.', type:'toggle', default:false },
-  { id:'watchMinScore', label:'Watch: minimum score', desc:'Only ping for SMC setups at or above this confluence score. Higher = fewer, higher-quality alerts.', type:'number', default:5, min:1, max:10, step:1, unit:'score' },
-  { id:'watchInterval', label:'Watch: scan interval', desc:'How often to scan the watchlist for setups, in seconds.', type:'number', default:60, min:10, max:900, step:5, unit:'s' },
-  { id:'tradeDefaultLots', label:'Trade: default lot size', desc:'Position size used when you approve a proposed trade. SL and TP come from the SMC plan; this only sets how many lots to open.', type:'number', default:0.01, min:0.01, max:100, step:0.01, unit:'lots' },
-];
-let settings = {};
-function loadSettings(){
-  settings = {};
-  SETTINGS_DEFS.forEach(d=>{ settings[d.id] = d.default; });
-  try{
-    const saved = JSON.parse(localStorage.getItem('taia.settings.v1')||'{}');
-    SETTINGS_DEFS.forEach(d=>{ if(typeof saved[d.id] === typeof d.default) settings[d.id] = saved[d.id]; });
-  }catch(e){}
+/* ---------- Settings: backend-served schema, rendered here ---------- */
+/* There is deliberately no field list in this file. GET /api/settings returns
+   the schema from trading/settings.py - the same object the backend validates
+   against and the prompt reads - so the browser cannot drift out of sync with
+   the server, and a control can only exist if something actually reads it.
+   (The old panel hardcoded six fields in localStorage and hand-mirrored five
+   of them to the server. That is exactly how two copies diverge.) */
+let stSchema = [];      // fields in schema order: {key,type,label,desc,group,...}
+let stGroups = [];      // group names, in schema order
+let stValues = {};      // live values, exactly as the server reports them
+let stDefaults = {};    // shipped defaults (reset fallbacks)
+let stLoaded = false;
+let stSaveTimer = null;
+const stPending = {};   // batched patch, flushed on a short debounce
+
+/* Route rows get an inline TEST button, so "does this channel actually reach
+   me?" is one click instead of waiting for a real fill or reminder. */
+const ST_TEST_CHANNEL = { notify_route_task:'task', notify_route_schedule:'schedule', notify_route_trade:'trade' };
+const ST_ENUM_LABEL = { manual:'Manual', auto:'Auto', off:'Off', toast:'Toast only', sound:'Sound only', both:'Toast + sound', dark:'Dark', light:'Light' };
+
+function stGet(key){
+  if(stValues[key]!=null) return stValues[key];
+  if(stDefaults[key]!=null) return stDefaults[key];
+  const d=stSchema.find(s=>s.key===key);
+  return d ? d.default : null;
 }
-function saveSettings(){ try{ localStorage.setItem('taia.settings.v1', JSON.stringify(settings)); }catch(e){} }
-function setting(id){ return (settings[id]!=null) ? settings[id] : (SETTINGS_DEFS.find(d=>d.id===id)||{}).default; }
+function stLeadLabel(m){
+  if(m<60) return m+'m';
+  const h=Math.floor(m/60), r=m%60;
+  return r ? h+'h'+r : h+'h';
+}
+
+async function loadSettings(){
+  try{
+    const r=await fetch('/api/settings');
+    const j=await r.json();
+    if(!j||!j.ok) return;
+    stSchema=j.schema||[]; stGroups=j.groups||[];
+    stValues=j.values||{}; stDefaults=j.defaults||{};
+    stLoaded=true;
+    stRepaint();
+  }catch(e){ stRepaint(); }
+}
+
+/* Never rebuild the DOM out from under a field the user is typing in. */
+function stRepaint(){
+  const a=document.activeElement, host=$('st-rows');
+  if(a && host && host.contains(a)) return;
+  renderSettings();
+}
+
+/* Batch rapid changes (dragging a number, ticking several windows) into one POST. */
+function stQueue(key, val){
+  stPending[key]=val;
+  clearTimeout(stSaveTimer);
+  stSaveTimer=setTimeout(stFlush, 250);
+}
+
+async function stFlush(){
+  const patch=Object.assign({}, stPending);
+  for(const k in stPending) delete stPending[k];
+  if(!Object.keys(patch).length) return;
+  try{
+    const r=await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)});
+    const j=await r.json();
+    // The response carries the *coerced* values: a clamped number or a bad
+    // enum comes back corrected, so the widget repaints to the truth.
+    if(j&&j.values){ stValues=j.values; stRepaint(); }
+    if(j&&j.rejected&&j.rejected.length){ postInsight('Unknown setting(s) ignored: '+j.rejected.join(', ')); }
+  }catch(e){ postInsight('Could not save settings \u2014 backend unreachable.'); }
+}
+
+async function stReset(){
+  try{
+    const r=await fetch('/api/settings/reset',{method:'POST'});
+    const j=await r.json();
+    if(j&&j.values){ stValues=j.values; stLoaded=true; renderSettings(); postInsight('Every setting is back to its shipped default.'); }
+  }catch(e){ postInsight('Reset failed \u2014 backend unreachable.'); }
+}
+
+async function stTestNotify(key, btn){
+  const channel=ST_TEST_CHANNEL[key]; if(!channel) return;
+  if(btn){ btn.disabled=true; btn.textContent='\u2026'; }
+  try{
+    const r=await fetch('/api/notify/test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({channel:channel})});
+    const j=await r.json();
+    if(j&&j.ok&&j.delivered){ postInsight('Test delivered on the '+channel+' channel ('+j.route+').'); }
+    else if(j&&j.ok){
+      const q=j.quiet||{};
+      postInsight('Test on '+channel+' was swallowed \u2014 route is "'+j.route+'"'
+        +(q.active?', and quiet hours are active ('+q.from+'\u2013'+q.to+')':'')+'.');
+    } else { postInsight('Test failed: '+((j&&j.error)||'unknown error')); }
+  }catch(e){ postInsight('Test failed \u2014 backend unreachable.'); }
+  if(btn){ btn.disabled=false; btn.textContent='TEST'; }
+}
+
+/* --- one control per schema type ----------------------------------------- */
+
+function stToggle(f){
+  const sw=document.createElement('button');
+  sw.type='button';
+  sw.className='st-switch'+(stGet(f.key)?' on':'');
+  sw.title='Toggle '+(f.label||f.key);
+  sw.onclick=()=>{
+    const v=!stGet(f.key);
+    stValues[f.key]=v;
+    sw.classList.toggle('on', v);
+    stAfterChange(f.key, v);
+    stQueue(f.key, v);
+  };
+  return sw;
+}
+
+function stNumber(f){
+  const wrap=document.createElement('div');
+  wrap.className='st-numwrap';
+  const inp=document.createElement('input');
+  inp.type='number';
+  inp.className='st-numinput';
+  if(f.min!=null) inp.min=f.min;
+  if(f.max!=null) inp.max=f.max;
+  inp.step=f.step||1;
+  inp.value=stGet(f.key);
+  inp.title=(f.label||'')+(f.unit?' ('+f.unit+')':'');
+  inp.onchange=()=>{
+    let v=parseFloat(inp.value);
+    if(!isFinite(v)) v=f.default;
+    if(f.min!=null) v=Math.max(f.min,v);
+    if(f.max!=null) v=Math.min(f.max,v);
+    inp.value=v;
+    stValues[f.key]=v;
+    stAfterChange(f.key, v);
+    stQueue(f.key, v);
+  };
+  wrap.appendChild(inp);
+  if(f.unit){
+    const u=document.createElement('span');
+    u.className='st-numunit';
+    u.textContent=f.unit;
+    wrap.appendChild(u);
+  }
+  return wrap;
+}
+
+function stEnum(f){
+  const sel=document.createElement('select');
+  sel.className='st-select';
+  (f.options||[]).forEach(o=>{
+    const opt=document.createElement('option');
+    opt.value=o;
+    opt.textContent=(ST_ENUM_LABEL[o]||o);
+    sel.appendChild(opt);
+  });
+  sel.value=stGet(f.key);
+  sel.onchange=()=>{ stValues[f.key]=sel.value; stAfterChange(f.key, sel.value); stQueue(f.key, sel.value); };
+  return sel;
+}
+
+function stMulti(f){
+  const wrap=document.createElement('div');
+  wrap.className='st-chips';
+  (f.allowed||[]).forEach(opt=>{
+    const cur=stGet(f.key);
+    const on=Array.isArray(cur) && cur.indexOf(opt)>=0;
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='st-chip'+(on?' on':'');
+    b.textContent=stLeadLabel(opt);
+    b.title=opt+' minutes before the event';
+    b.onclick=()=>{
+      const base=Array.isArray(stValues[f.key])?stValues[f.key].slice():(Array.isArray(cur)?cur.slice():[]);
+      const i=base.indexOf(opt);
+      if(i>=0) base.splice(i,1); else base.push(opt);
+      base.sort((a,b)=>b-a);
+      stValues[f.key]=base;
+      stAfterChange(f.key, base);
+      stQueue(f.key, base);
+      renderSettings();     // repaint so the chip state is instant
+    };
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+
+function stTime(f){
+  const inp=document.createElement('input');
+  inp.type='time';
+  inp.className='st-time';
+  inp.value=stGet(f.key);
+  inp.onchange=()=>{ stValues[f.key]=inp.value; stAfterChange(f.key, inp.value); stQueue(f.key, inp.value); };
+  return inp;
+}
+
+/* An unknown type from a newer backend renders nothing rather than a guess. */
+function stControl(f){
+  switch(f.type){
+    case 'toggle': return stToggle(f);
+    case 'number': return stNumber(f);
+    case 'enum':   return stEnum(f);
+    case 'multi':  return stMulti(f);
+    case 'time':   return stTime(f);
+    default:       return null;
+  }
+}
+
+function stRow(f){
+  const row=document.createElement('div');
+  row.className='st-row';
+  row.innerHTML='<div class="st-info"><div class="st-label">'+escapeHtml(f.label||f.key)
+    +'</div><div class="st-desc">'+escapeHtml(f.desc||'')+'</div></div>';
+  const ctl=stControl(f);
+  if(!ctl) return row;
+  if(ST_TEST_CHANNEL[f.key]){
+    const group=document.createElement('div');
+    group.className='st-ctlgroup';
+    const t=document.createElement('button');
+    t.type='button';
+    t.className='st-test';
+    t.textContent='TEST';
+    t.title='Fire a test notification on this channel, honouring the same gate a real one goes through';
+    t.onclick=()=>stTestNotify(f.key, t);
+    group.appendChild(t);
+    group.appendChild(ctl);
+    row.appendChild(group);
+  } else {
+    row.appendChild(ctl);
+  }
+  return row;
+}
+
 function renderSettings(){
   const host=$('st-rows'); if(!host) return;
   host.innerHTML='';
-  SETTINGS_DEFS.forEach(d=>{
-    const row=document.createElement('div');
-    row.className='st-row';
-    row.innerHTML='<div class="st-info"><div class="st-label">'+escapeHtml(d.label)+'</div><div class="st-desc">'+escapeHtml(d.desc)+'</div></div>';
-    if(d.type==='toggle'){
-      const sw=document.createElement('button');
-      sw.type='button';
-      sw.className='st-switch'+(settings[d.id]?' on':'');
-      sw.title='Toggle';
-      sw.onclick=()=>{ settings[d.id]=!settings[d.id]; saveSettings(); sw.classList.toggle('on', settings[d.id]); onSettingChanged(d.id, settings[d.id]); };
-      row.appendChild(sw);
-    } else if(d.type==='number'){
-      const wrap=document.createElement('div');
-      wrap.className='st-numwrap';
-      const inp=document.createElement('input');
-      inp.type='number';
-      if(d.min!=null) inp.min=d.min;
-      if(d.max!=null) inp.max=d.max;
-      inp.step=d.step||1;
-      inp.value=settings[d.id];
-      inp.className='st-numinput';
-      if(d.unit) inp.title=d.unit;
-      inp.onchange=()=>{
-        let v=parseFloat(inp.value);
-        if(isNaN(v)) v=d.default;
-        if(d.min!=null && v<d.min) v=d.min;
-        if(d.max!=null && v>d.max) v=d.max;
-        inp.value=v;
-        settings[d.id]=v;
-        saveSettings();
-        onSettingChanged(d.id, v);
-      };
-      wrap.appendChild(inp);
-      if(d.unit){
-        const u=document.createElement('span');
-        u.className='st-numunit';
-        u.textContent=d.unit;
-        wrap.appendChild(u);
-      }
-      row.appendChild(wrap);
-    }
-    host.appendChild(row);
+  if(!stSchema.length){
+    const d=document.createElement('div');
+    d.className='st-empty';
+    d.textContent = stLoaded ? 'No settings exposed by the backend.' : 'Settings unavailable \u2014 backend not reachable.';
+    host.appendChild(d);
+    return;
+  }
+  const byGroup={};
+  stSchema.forEach(f=>{ (byGroup[f.group]=byGroup[f.group]||[]).push(f); });
+  stGroups.forEach(g=>{
+    if(!byGroup[g]) return;
+    const h=document.createElement('div');
+    h.className='st-group';
+    h.textContent=String(g).toUpperCase();
+    host.appendChild(h);
+    byGroup[g].forEach(f=>host.appendChild(stRow(f)));
   });
 }
-function onSettingChanged(id, val){
-  if(id==='alertsActiveOnly' && !val){ postInsight('Alerts now show for all markets.'); }
-  if(id==='smcEnabled'){ postInsight(val ? 'SMC reasoning on — Lydia will read structure levels (order blocks, FVGs, BOS/CHoCH).' : 'SMC reasoning off.'); }
-  if(id==='watchEnabled'){
-    postInsight(val ? 'Watch mode armed — scanning for high-score SMC setups.' : 'Watch mode off.');
-    if(val){ scanNow(true); }          // immediate first pass when armed
-    else { refreshWatchStatus(); }
+
+/* Side effects that belong to a setting, not to the widget that changed it. */
+function stAfterChange(key, val){
+  switch(key){
+    case 'alerts_active_only':
+      if(!val) postInsight('Alerts now show for every watched market.');
+      break;
+    case 'smc_enabled':
+      postInsight(val ? 'SMC reasoning on \u2014 Lydia will read structure levels (order blocks, FVGs, BOS/CHoCH).' : 'SMC reasoning off.');
+      break;
+    case 'watch_enabled':
+      postInsight(val ? 'Watch mode armed \u2014 scanning for high-score SMC setups.' : 'Watch mode off.');
+      if(val) scanNow(true); else refreshWatchStatus();
+      break;
+    case 'watch_min_score': postInsight('Watch alerts now fire at score '+val+'+.'); break;
+    case 'watch_interval': postInsight('Watch scan interval set to '+val+'s.'); break;
+    case 'execution_mode':
+      postInsight(val==='auto'
+        ? 'Auto execution on \u2014 a qualifying setup goes to MT5 without asking. The lot cap and daily loss cap still apply.'
+        : 'Manual execution \u2014 every order waits for your explicit yes.');
+      break;
+    case 'execution_max_lots': postInsight('Hard cap set: no order can exceed '+val+' lots.'); break;
+    case 'reminder_leads':
+      postInsight('Reminders fire at '+((val&&val.length)?val.map(stLeadLabel).join(', '):'no')+' before each event.');
+      break;
+    case 'quiet_hours_enabled':
+      postInsight(val ? 'Quiet hours on \u2014 non-urgent notifications will wait.' : 'Quiet hours off.');
+      break;
+    case 'quiet_hours_break_through_trades':
+      postInsight(val ? 'Trade alerts will break through quiet hours.' : 'Trade alerts will respect quiet hours.');
+      break;
   }
-  if(id==='watchMinScore'){ postInsight('Watch alerts now fire at score '+val+'+.'); }
-  if(id==='watchInterval'){ postInsight('Watch scan interval set to '+val+'s.'); }
-  if(id==='tradeDefaultLots'){ postInsight('Approved trades will open '+val+' lots.'); }
-  pushSettingToServer(id, val);
 }
-// Map UI setting ids to the backend's settings.json keys. Everything else
-// stays client-side only (localStorage); these need a server twin because
-// the backend (the system prompt / alert filter / watch scanner) reads them.
-function settingServerKey(id){
-  return { smcEnabled:'smc_enabled', alertsActiveOnly:'alerts_active_only', watchEnabled:'watch_enabled', watchMinScore:'watch_min_score', watchInterval:'watch_interval' }[id] || null;
-}
-async function pushSettingToServer(id, val){
-  const key = settingServerKey(id);
-  if(!key) return;
-  try{
-    await fetch('/api/trading/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({[key]: val}) });
-  }catch(e){}
-}
-async function pullServerSettings(){
-  try{
-    const r = await fetch('/api/trading/settings');
-    const data = await r.json();
-    if(!data) return;
-    if(typeof data.smc_enabled === 'boolean') settings.smcEnabled = data.smc_enabled;
-    if(typeof data.alerts_active_only === 'boolean') settings.alertsActiveOnly = data.alerts_active_only;
-    if(typeof data.watch_enabled === 'boolean') settings.watchEnabled = data.watch_enabled;
-    if(typeof data.watch_min_score === 'number') settings.watchMinScore = data.watch_min_score;
-    if(typeof data.watch_interval === 'number') settings.watchInterval = data.watch_interval;
-    saveSettings();
-  }catch(e){}
-}
+
 /* ---------- watch-mode observability (status readout + manual scan) ---------- */
 async function refreshWatchStatus(){
   const stateEl=$('watch-state'), metaEl=$('watch-meta'), alertsEl=$('watch-alerts');
@@ -2369,7 +2573,7 @@ async function refreshWatchStatus(){
     const r=await fetch('/api/trading/watch/status');
     const s=await r.json();
     if(!s) return;
-    const armed=setting('watchEnabled');
+    const armed=!!stGet('watch_enabled');
     const running=!!s.running;
     stateEl.textContent = running ? 'RUNNING' : (armed ? 'ARMED' : 'IDLE');
     stateEl.className='st-watch-state'+(running?' running':(armed?' armed':''));
@@ -2414,8 +2618,9 @@ async function scanNow(silent){
   }
 }
 if($('watch-scan')) $('watch-scan').onclick=()=>scanNow(false);
-if($('settingsbtn')) $('settingsbtn').onclick=()=>{ renderSettings(); refreshWatchStatus(); $('settings').classList.add('show'); };
+if($('settingsbtn')) $('settingsbtn').onclick=()=>{ loadSettings(); refreshWatchStatus(); $('settings').classList.add('show'); };
 if($('st-close')) $('st-close').onclick=()=>$('settings').classList.remove('show');
+if($('st-reset')) $('st-reset').onclick=()=>stReset();
 if($('settings')) $('settings').addEventListener('click', e=>{ if(e.target===$('settings')) $('settings').classList.remove('show'); });
 
 /* ---------- Market Workspace: interactive market selection ---------- */
@@ -2965,7 +3170,7 @@ function updateMkLive(snap){
   }
 }
 function maybeMoveInsight(ticks){
-  const syms = setting('alertsActiveOnly') ? [activeMarket] : MK_SYMBOLS;
+  const syms = stGet('alerts_active_only') ? [activeMarket] : MK_SYMBOLS;
   for(const sym of syms){
     const t=ticks[sym]; if(!t||t.bid==null) continue;
     const base=lastInsightPrice[sym];
@@ -2989,7 +3194,6 @@ function maybeNewsInsight(events){
 
 /* --- init --- */
 loadSettings();
-pullServerSettings();
 restoreMarket();
 renderMkChips();
 renderMkTfs();
@@ -3169,8 +3373,13 @@ function proposalBubble(txt, alert){
 
 function approveProposal(alert, card){
   const side = alert.direction==='up' ? 'buy' : 'sell';
-  const lot = parseFloat(setting('tradeDefaultLots'));
-  const vol = (isFinite(lot) && lot>0) ? lot : 0.01;
+  const lot = parseFloat(stGet('trade_default_lots'));
+  let vol = (isFinite(lot) && lot>0) ? lot : 0.01;
+  // Mirror the hard cap that /api/order enforces at the last gate before real
+  // money. Without this the endpoint would *reject* an oversized default, and
+  // the size she reads back would never match what actually reaches MT5.
+  const cap = parseFloat(stGet('execution_max_lots'));
+  if(isFinite(cap) && cap>0 && vol>cap){ vol=cap; postInsight('Size clamped to your '+cap+' lot hard cap.'); }
   if(card){ const a=card.querySelector('.prop-actions'); if(a) a.remove(); }
   add($('chat'), chatBubble('msg assistant',
     'Are you sure? This places a live market '+(side==='buy'?'BUY':'SELL')+' on '+alert.symbol

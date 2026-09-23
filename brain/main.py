@@ -202,6 +202,51 @@ def _smc_context() -> str:
         return f"(SMC analysis unavailable: {e})"
 
 
+def _execution_context() -> str:
+    """Execution policy block, driven by the execution_mode setting.
+
+    Manual is the shipped default: she presents the ticket and waits for an
+    explicit yes. Auto relaxes that to "announce and fire", but the hard lot
+    cap and daily loss cap still apply — and the lot cap is enforced again in
+    the order endpoint, not just here in prose, so a prompt-injected model
+    can't size past it.
+    """
+    try:
+        mode = str(taia_setting_get("execution_mode", "manual") or "manual").lower()
+        cap = taia_setting_get("execution_max_lots", 1.0)
+        loss = taia_setting_get("execution_daily_loss_cap", 0.0)
+        risk = taia_setting_get("risk_default_risk_pct", 1.0)
+    except Exception:
+        mode, cap, loss, risk = "manual", 1.0, 0.0, 1.0
+
+    if mode == "auto":
+        head = ("## Execution policy (current): AUTO\n"
+                "- You may place an order as soon as your own analysis confirms a "
+                "qualifying setup \u2014 you do not need a second yes. Announce the "
+                "exact order as you place it: symbol, side, volume, SL, TP.\n"
+                "- There is no autonomous loop behind this yet: you still act only "
+                "during a turn, never while idle.\n")
+    else:
+        head = ("## Execution policy (current): MANUAL\n"
+                "- Never place an order yourself. Present the exact ticket (symbol, "
+                "side, volume, SL, TP) and wait for an explicit yes.\n"
+                "- This is the shipped default. A hint or a vibe is not a yes.\n")
+
+    tail = f"- Hard cap: never size above {cap} lots on a single order.\n"
+    try:
+        if risk:
+            tail += f"- Default risk: {risk}% of account per trade.\n"
+    except Exception:
+        pass
+    try:
+        if loss and float(loss) > 0:
+            tail += (f"- Daily loss cap: stop opening new trades once the day is "
+                     f"down {loss} account currency.\n")
+    except Exception:
+        pass
+    return head + tail
+
+
 def _system_prompt() -> str:
     now = datetime.now().strftime("%A, %B %d %Y, %I:%M %p")
     old_facts = _load_legacy_facts_text()
@@ -219,6 +264,8 @@ def _system_prompt() -> str:
 
 ## Trading mode (current): {tier.upper()}
 {trade_mode}
+
+{_execution_context()}
 
 {market_context()}
 

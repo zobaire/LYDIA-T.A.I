@@ -128,6 +128,19 @@ def scan_once() -> list[dict]:
                 _notify(alert)
             except Exception:
                 pass
+        # Out-of-band cue: the websocket only reaches an open browser tab, so
+        # a setup found while you're in another app would otherwise be missed.
+        # notify handles the trade-channel route + quiet-hours break-through.
+        try:
+            from brain.notify import notify_trade
+            notify_trade(
+                f"{sym} {str(best.get('direction') or '').upper()} setup",
+                (f"Score {best.get('score')} ({best.get('quality')}) \u00b7 "
+                 f"entry {p.get('entry')} \u00b7 SL {p.get('stop')} \u00b7 "
+                 f"TP {p.get('target')} \u00b7 {p.get('rr')}R {tf}"),
+            )
+        except Exception:
+            pass
     return fired
 
 

@@ -48,7 +48,13 @@ from trading.mt5_bridge import (
     trade_markers as trading_trade_markers,
 )
 from trading.news import fetch_calendar as fetch_news_calendar
-from trading.settings import all as taia_settings_all, update as taia_settings_update
+from trading.settings import (
+    all as taia_settings_all,
+    update as taia_settings_update,
+    apply_patch as taia_settings_apply,
+    payload as taia_settings_payload,
+    reset as taia_settings_reset,
+)
 from trading.smc import analyze as smc_analyze
 from trading.watch import start as start_watch, scan_once as watch_scan_once, status as watch_status
 
@@ -378,10 +384,35 @@ async def api_trading_order(request: Request):
     if order_type in ("limit", "stop") and price is None:
         return {"ok": False, "error": "pending orders need a price"}
 
-    return trading_place_order(
+    # Hard lot cap from settings — enforced at the last gate before real money,
+    # so it holds no matter who called this (UI, AI tool, or a future auto path).
+    try:
+        from trading.settings import get as _sget
+        cap = float(_sget("execution_max_lots", 1.0) or 0)
+        if cap > 0 and volume > cap:
+            return {"ok": False,
+                    "error": f"volume {volume} exceeds your hard cap of {cap} lots"}
+    except Exception:
+        pass
+
+    res = trading_place_order(
         symbol, side, volume, sl=sl, tp=tp,
         order_type=order_type, price=price, comment=comment,
     )
+    try:
+        if isinstance(res, dict) and res.get("ok"):
+            from brain.notify import notify_trade
+            bits = [f"{order_type} {volume} lots"]
+            if sl:
+                bits.append(f"SL {sl}")
+            if tp:
+                bits.append(f"TP {tp}")
+            if res.get("price"):
+                bits.append(f"@ {res['price']}")
+            notify_trade(f"{symbol} {side.upper()} filled", " \u00b7 ".join(bits))
+    except Exception:
+        pass
+    return res
 
 
 @app.post("/api/trading/close")
@@ -394,7 +425,18 @@ async def api_trading_close(request: Request):
         ticket = int(ticket)
     except (TypeError, ValueError):
         return {"ok": False, "error": "ticket must be an integer"}
-    return trading_close_position(ticket, volume=volume)
+    res = trading_close_position(ticket, volume=volume)
+    try:
+        if isinstance(res, dict) and res.get("ok"):
+            from brain.notify import notify_trade
+            notify_trade(
+                f"Position {ticket} closed",
+                (f"{(volume or res.get('volume') or '')} lots"
+                 + (f" @ {res['price']}" if res.get("price") else "")),
+            )
+    except Exception:
+        pass
+    return res
 
 
 @app.post("/api/trading/close_all")
@@ -425,7 +467,88 @@ async def api_trading_modify(request: Request):
     return trading_modify_position(ticket, sl=sl, tp=tp)
 
 
+# --- Settings (single source of truth for the UI drawer) ----------------
+
+def _broadcast_settings(values: dict) -> None:
+    """Tell every connected UI the settings changed (multi-tab stays in sync).
+
+    brain.events.broadcast is already wired to the websocket fan-out via
+    register(broadcast_to_ws) at startup, so one call is enough. The unknown
+    "settings" type passes through _translate_event untouched.
+    """
+    try:
+        broadcast({"type": "settings", "values": values})
+    except Exception:
+        pass
+
+
+@app.get("/api/settings")
+async def api_settings():
+    """Full settings payload: live values + shipped defaults + schema + groups.
+
+    The settings drawer renders itself from this, so there is no second,
+    hand-maintained copy of the field list living in the browser where it
+    could drift out of sync with the backend.
+    """
+    return taia_settings_payload()
+
+
+@app.post("/api/settings")
+async def api_settings_update(request: Request):
+    """Validate + persist a patch, then notify every connected UI.
+
+    Unknown keys are rejected rather than stored. Out-of-range numbers are
+    clamped to schema bounds and the coerced values come back in the response,
+    so a client can correct its own widget without a re-fetch.
+    """
+    body = await request.json()
+    values, rejected = taia_settings_apply(body if isinstance(body, dict) else {})
+    _broadcast_settings(values)
+    return {"ok": True, "values": values, "rejected": rejected}
+
+
+@app.post("/api/settings/reset")
+async def api_settings_reset():
+    """Back to shipped defaults — a way out if a value goes bad."""
+    values = taia_settings_reset()
+    _broadcast_settings(values)
+    return {"ok": True, "values": values}
+
+
+@app.get("/api/notify/state")
+async def api_notify_state():
+    """Notification diagnostics: routes, quiet-hours state, and which files
+    the settings are coming from. Handy when a cue doesn't arrive."""
+    from brain.notify import route_for, quiet_state
+    return {
+        "ok": True,
+        "routes": {ch: route_for(ch) for ch in ("task", "schedule", "trade")},
+        "quiet": quiet_state(),
+    }
+
+
+@app.post("/api/notify/test")
+async def api_notify_test(request: Request):
+    """Fire a test notification on a channel so routing and quiet hours can be
+    verified without waiting for a real event. Respects the gate exactly like
+    a real notification: if it returns delivered=false, that's the truth."""
+    body = await request.json()
+    channel = str((body or {}).get("channel", "task")).strip().lower()
+    if channel not in ("task", "schedule", "trade"):
+        return {"ok": False, "error": "channel must be task/schedule/trade"}
+    from brain.notify import notify as _notify, route_for, quiet_state
+    delivered = _notify(
+        f"Lydia \u2014 {channel} test",
+        "If you can see this, that channel works.",
+        channel=channel,
+    )
+    return {"ok": True, "channel": channel, "delivered": delivered,
+            "route": route_for(channel), "quiet": quiet_state()}
+
+
 # --- Trading (Phase 5 — strategy engine / SMC) --------------------------
+# Kept for backward compatibility: the older UI (and any script) still calls
+# these. They delegate to the same store as /api/settings.
 
 @app.get("/api/trading/settings")
 async def api_trading_settings():
@@ -438,7 +561,9 @@ async def api_trading_settings_update(request: Request):
     """Update backend settings. Only known keys are accepted — anything the
     UI throws in that the backend doesn't recognize is dropped by update()."""
     body = await request.json()
-    return taia_settings_update(body if isinstance(body, dict) else {})
+    values = taia_settings_update(body if isinstance(body, dict) else {})
+    _broadcast_settings(values)
+    return values
 
 
 @app.get("/api/trading/smc")

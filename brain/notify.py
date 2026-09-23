@@ -1,22 +1,41 @@
-"""Task-done notifications — a Windows chime + toast when Lydia finishes.
+"""Notifications — the only out-of-band cue that something happened.
 
-Fires when a request fully completes (response text is final). Two outputs:
-  1. play_done_sound()  — the stock Windows notification sound (winsound alias),
-     so it feels native instead of some synth blip.
-  2. show_windows_toast() — a real notification balloon via PowerShell WinRT
-     (no extra deps, works on Win10/11).
+Since the voice pipeline was removed, Windows is now the only way Lydia can
+reach you when you aren't looking at the browser tab. Three outputs:
 
-Both are gated by config.yaml -> notifications:
-    notifications:
-      done_sound: true
-      done_toast: true
+  1. play_done_sound()   — the stock Windows notification sound (winsound alias),
+                           so it feels native instead of some synth blip.
+  2. show_windows_toast() — a real Action Center toast via PowerShell WinRT
+                           (no extra deps, works on Win10/11).
+  3. broadcast()          — the websocket path, for the live UI.
 
-NOTE (voice removal): this used to carry "smart-skip" logic that deliberately
-stayed silent when TTS was about to read the answer aloud — the reasoning
-being that speech WAS the notification. That whole branch is gone along with
-the voice pipeline, because with no TTS it would have suppressed every toast
-she ever fired. This module no longer imports anything from a voice subsystem;
-it is now the ONLY out-of-band cue that a task finished.
+Routing (phase 2)
+-----------------
+Every notification travels through `notify(title, message, channel=...)`.
+`channel` is one of:
+
+    task      — a reply / task finished
+    schedule  — a scheduled reminder came due
+    trade     — a trading alert, fill, stop-out or take-profit
+
+Each channel has a route setting in trading/settings.json controlling HOW it
+arrives: `off` | `toast` | `sound` | `both`. The task channel additionally
+honours the legacy `notify_done_toast` / `notify_done_sound` booleans (ANDed
+with the route), so you can kill just the chime without killing the toast.
+
+Quiet hours gate (phase 5)
+--------------------------
+`should_notify(channel)` is the single gate in front of every delivery. It
+handles the overnight wrap (23:00 -> 07:00 spans midnight) and lets trade
+alerts punch through when `quiet_hours_break_through_trades` is on — the
+default, because a stop-out at 2 AM is not something to sleep through.
+
+Source of truth
+---------------
+Settings live in `trading/settings.json` (schema in trading/settings.py) and
+are surfaced in the UI. `config.yaml -> notifications:` is no longer read;
+those two flags moved into the settings store so the drawer and the backend
+can never disagree.
 
 Everything runs in daemon threads — never blocks the brain.
 """
@@ -25,20 +44,110 @@ import subprocess
 import sys
 import tempfile
 import threading
+from datetime import datetime
 from pathlib import Path
 
-from brain.config import load_config
+# Channel -> settings key holding that channel's route.
+_ROUTE_KEYS = {
+    "task": "notify_route_task",
+    "schedule": "notify_route_schedule",
+    "trade": "notify_route_trade",
+}
 
 
-def _flag(name: str, default: bool = True) -> bool:
-    """Read a notifications.* toggle from config.yaml (default: on)."""
+def _setting(key: str, default):
+    """Read a setting without ever raising (import-time safety)."""
     try:
-        cfg = load_config().get("notifications", {})
-        val = cfg.get(name, default)
-        return bool(val)
+        from trading.settings import get
+        return get(key, default)
     except Exception:
         return default
 
+
+# --- routing ---------------------------------------------------------------
+
+def route_for(channel: str) -> str:
+    """Delivery route for a channel: 'off' | 'toast' | 'sound' | 'both'."""
+    key = _ROUTE_KEYS.get(channel)
+    if not key:
+        return "both"
+    val = str(_setting(key, "both") or "both").strip().lower()
+    if val not in ("off", "toast", "sound", "both"):
+        return "both"
+    if channel == "task":
+        # Legacy fine-grained flags, ANDed with the coarse route.
+        toast_ok = bool(_setting("notify_done_toast", True))
+        sound_ok = bool(_setting("notify_done_sound", True))
+        want_toast = val in ("toast", "both") and toast_ok
+        want_sound = val in ("sound", "both") and sound_ok
+        return ("both" if (want_toast and want_sound)
+                else "toast" if want_toast
+                else "sound" if want_sound
+                else "off")
+    return val
+
+
+# --- quiet hours -----------------------------------------------------------
+
+def _minutes(hhmm: str) -> int | None:
+    """'23:00' -> 1380. None if unparseable."""
+    try:
+        h, m = str(hhmm).split(":")
+        h, m = int(h), int(m)
+        if 0 <= h <= 23 and 0 <= m <= 59:
+            return h * 60 + m
+    except Exception:
+        pass
+    return None
+
+
+def in_quiet_hours(now: datetime | None = None) -> bool:
+    """True if `now` falls inside the configured quiet window.
+
+    Handles the overnight wrap. A zero-length or unparseable window is
+    treated as 'not quiet' rather than muting everything forever.
+    """
+    try:
+        if not _setting("quiet_hours_enabled", False):
+            return False
+        frm = _minutes(_setting("quiet_hours_from", "23:00"))
+        to = _minutes(_setting("quiet_hours_to", "07:00"))
+        if frm is None or to is None or frm == to:
+            return False
+        now = now or datetime.now()
+        cur = now.hour * 60 + now.minute
+        if frm < to:
+            return frm <= cur < to           # same-day window
+        return cur >= frm or cur < to        # wraps midnight
+    except Exception:
+        return False
+
+
+def should_notify(channel: str = "task") -> bool:
+    """The single gate in front of every delivery. True = go ahead and fire."""
+    if route_for(channel) == "off":
+        return False
+    if in_quiet_hours():
+        # Trade alerts break through by default; everything else waits.
+        if channel == "trade":
+            return bool(_setting("quiet_hours_break_through_trades", True))
+        return False
+    return True
+
+
+def quiet_state() -> dict:
+    """Diagnostics for the UI / a health check."""
+    return {
+        "enabled": bool(_setting("quiet_hours_enabled", False)),
+        "active": in_quiet_hours(),
+        "from": _setting("quiet_hours_from", "23:00"),
+        "to": _setting("quiet_hours_to", "07:00"),
+        "break_through_trades": bool(
+            _setting("quiet_hours_break_through_trades", True)),
+    }
+
+
+# --- text shaping ----------------------------------------------------------
 
 def _clean_summary(text: str, limit: int = 150) -> str:
     """Flatten a markdown response into one short readable line for a toast."""
@@ -56,9 +165,11 @@ def _clean_summary(text: str, limit: int = 150) -> str:
     s = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", s)
     s = " ".join(s.split())
     if len(s) > limit:
-        s = s[: limit - 1].rstrip() + "…"
+        s = s[: limit - 1].rstrip() + "\u2026"
     return s
 
+
+# --- delivery --------------------------------------------------------------
 
 def play_done_sound() -> None:
     """Play the stock Windows notification sound, non-blocking.
@@ -141,21 +252,45 @@ def show_windows_toast(title: str, message: str) -> None:
     threading.Thread(target=_toast, daemon=True).start()
 
 
+def notify(title: str, message: str, channel: str = "task") -> bool:
+    """Route one notification. Returns True if it was delivered.
+
+    Never raises, never blocks. Quiet hours and the route setting are both
+    applied here so no caller has to remember to check them.
+    """
+    try:
+        if not should_notify(channel):
+            return False
+        route = route_for(channel)
+        if route in ("sound", "both"):
+            play_done_sound()
+        if route in ("toast", "both"):
+            show_windows_toast(title, message)
+        return True
+    except Exception:
+        return False
+
+
+# --- channel helpers -------------------------------------------------------
+
 def notify_done(response_text: str) -> None:
     """Fire the task-done chime + toast for a finished response.
 
     Called by every completion path (UI chat, console REPL, remember
     short-circuit). There is nothing to suppress any more — no TTS means
-    every finished reply is genuinely silent, so the notification always fires.
+    every finished reply is genuinely silent, so this always fires unless
+    you turned the channel off or you're inside quiet hours.
     """
     if not response_text or not response_text.strip():
         return
-    sound_on = _flag("done_sound", True)
-    toast_on = _flag("done_toast", True)
-    if not sound_on and not toast_on:
-        return
-    summary = _clean_summary(response_text)
-    if sound_on:
-        play_done_sound()
-    if toast_on:
-        show_windows_toast("Lydia — done", summary)
+    notify("Lydia \u2014 done", _clean_summary(response_text), channel="task")
+
+
+def notify_reminder(title: str, message: str) -> None:
+    """A scheduled reminder came due. Channel: schedule."""
+    notify(title or "Reminder", message or "", channel="schedule")
+
+
+def notify_trade(title: str, message: str) -> None:
+    """A trading alert / fill / stop-out. Channel: trade."""
+    notify(title or "Trade", message or "", channel="trade")
