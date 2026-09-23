@@ -16,8 +16,8 @@ _EFFORT_PATH = Path(__file__).parent.parent / "memory_data" / "effort.json"
 def load_dotenv() -> dict[str, str]:
     """Parse .env file manually (no python-dotenv dependency required).
 
-    Single source of truth for .env parsing — web.py, stt.py, tts.py and
-    wake.py should import this instead of copy-pasting their own parser.
+    Single source of truth for .env parsing — web.py and the tool modules
+    should import this instead of copy-pasting their own parser.
     """
     env: dict[str, str] = {}
     if not _ENV_PATH.exists():
@@ -114,23 +114,11 @@ def default_config() -> dict[str, Any]:
             "chroma_path": "memory_data/chroma",
             "top_k": 3,
         },
-        "stt": {
-            "provider": "local",
-            "model": "small",
-            "fallbacks": [
-                {"provider": "gemini", "model": "gemini-3.6-flash"},
-            ],
-        },
-        "tts": {
-            "provider": "edge",
-            "voice": "en-US-AriaNeural",
-            "speed": "+0%",
-        },
         "notifications": {
-            # Play the Windows notification sound when a task finishes and
-            # the answer isn't being spoken aloud.
+            # Play the Windows notification sound when a task finishes. With
+            # the voice pipeline removed this is a primary cue, not a fallback.
             "done_sound": True,
-            # Show a real Windows toast on silent completions too.
+            # Show a real Windows Action Center toast on every completion.
             "done_toast": True,
         },
         "ui": {"host": "127.0.0.1", "port": 8765},

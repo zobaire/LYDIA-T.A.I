@@ -30,11 +30,6 @@ from brain.main import (
     abort_all,
     reset_abort,
     is_stop_command,
-    toggle_mute,
-    is_muted,
-    speak_streamed_if_unmuted,
-    interrupt_and_speak,
-    handle_wake,
     Aborted,
 )
 
@@ -72,7 +67,6 @@ _TOKEN_PATH = _MEMORY_DIR / "web_token.txt"
 app = FastAPI(title="Lydia")
 _clients: list[WebSocket] = []
 _loop: asyncio.AbstractEventLoop | None = None
-_listening_enabled = True
 
 
 def _get_web_token() -> str:
@@ -103,7 +97,7 @@ def _is_loopback(client_ip: str) -> bool:
 # Abort semantics stay sticky: abort_all() fires the flag and NEVER clears it
 # itself. Only the dispatcher clears it, between requests, so an aborted
 # request fully unwinds (chat_with_tools raises Aborted within ~100ms) and can
-# never keep thinking or speak afterward. A brand-new user_text aborts the
+# never keep thinking afterward. A brand-new user_text aborts the
 # in-flight request first, then runs — newest message wins.
 _request_queue: queue.Queue = queue.Queue()
 _dispatcher_started = False
@@ -138,7 +132,7 @@ def _request_dispatcher_loop() -> None:
 
     Clears the abort flag only between requests, so a Stop fired during a
     request makes it raise Aborted at the next poll (~100ms, or before/after
-    each tool call) — no overlap, no zombie speech. A request queued while one
+    each tool call) — no overlap, no zombie work. A request queued while one
     is running waits for the previous one to abort first (newest message wins).
     """
     while True:
@@ -151,13 +145,7 @@ def _request_dispatcher_loop() -> None:
                 response = process_request(text)
             except Aborted:
                 response = None
-            if response:
-                # Speak in its own thread — interruptible, and the receive
-                # loop stays free the whole time.
-                threading.Thread(
-                    target=_speak_response_bg, args=(response,), daemon=True
-                ).start()
-            else:
+            if not response:
                 # Aborted before a reply existed — guarantee the orb goes back
                 # to idle even if abort_all()'s "Stopped." raced ahead.
                 broadcast({"type": "status", "message": "Ready."})
@@ -225,9 +213,6 @@ def _translate_event(evt: dict) -> dict | None:
         msg = evt.get("message", "")
         mapping = {
             "Thinking...": "thinking",
-            "Speaking...": "talking",
-            "Listening...": "listening",
-            "Wake.": "listening",
             "Ready.": "connected",
             "Stopped.": "connected",
         }
@@ -238,8 +223,6 @@ def _translate_event(evt: dict) -> dict | None:
         return {"type": "tool", "name": evt.get("name", ""), "args": evt.get("args", {})}
     elif t == "tool_result":
         return {"type": "tool_result", "name": evt.get("name", ""), "text": evt.get("result", "")}
-    elif t == "mute":
-        return {"type": "mute", "muted": evt.get("muted", False)}
     elif t == "provider_changed":
         return {
             "type": "provider",
@@ -254,25 +237,6 @@ def _translate_event(evt: dict) -> dict | None:
     elif t == "memory":
         return {"type": "memory", "text": evt.get("text", "")}
     return evt
-
-
-def _speak_response_bg(response: str) -> None:
-    """Speak a chat reply with status broadcasts so the orb cycles
-    talking -> connected (mirrors the voice path in _handle_wake_inner).
-
-    The chat WebSocket path never broadcast any status around TTS, so after
-    every typed message the orb stayed on "thinking" until the next
-    interaction. This broadcasts Speaking... right before TTS starts and
-    Ready. once the stream finishes (or immediately if muted).
-    """
-    if is_muted():
-        broadcast({"type": "status", "message": "Ready."})
-        return
-    broadcast({"type": "status", "message": "Speaking..."})
-    try:
-        interrupt_and_speak(response)
-    finally:
-        broadcast({"type": "status", "message": "Ready."})
 
 
 def broadcast_to_ws(event: dict) -> None:
@@ -759,7 +723,6 @@ async def websocket_endpoint(ws: WebSocket):
     if _boot_lang not in _LANG_NAMES:
         _boot_lang = "en"
     await ws.send_text(json.dumps({"type": "lang", "lang": _boot_lang, "name": _LANG_NAMES[_boot_lang]}))
-    await ws.send_text(json.dumps({"type": "mute", "muted": is_muted()}))
     await ws.send_text(json.dumps({"type": "schedule", "events": schedule_list_events()}))
     # Tell the UI which provider/model is currently active so the buttons light up on load.
     ctx = load_config().get("brain", {})
@@ -795,7 +758,7 @@ async def websocket_endpoint(ws: WebSocket):
                     continue
 
                 # Brand-new user request: newest message wins, so hard-stop
-                # any in-flight thinking or speaking, then queue this one.
+                # any in-flight thinking, then queue this one.
                 # abort_all() sets the sticky abort flag — the dispatcher is
                 # the only thing that clears it (between requests), so the
                 # old request truly unwinds before the new one starts.
@@ -805,20 +768,11 @@ async def websocket_endpoint(ws: WebSocket):
                 _ensure_request_dispatcher()
                 _request_queue.put(text)
 
-            elif msg_type == "wake":
-                await ws.send_text(json.dumps({"type": "status", "text": "listening"}))
-                def _run_mic_pipeline():
-                    try:
-                        handle_wake()
-                    except Exception as e:
-                        print(f"[Mic] Error: {e}")
-                threading.Thread(target=_run_mic_pipeline, daemon=True).start()
-
             elif msg_type == "stop":
-                # Stop talking AND thinking: fire the sticky abort flag and cut
-                # any audio. The dispatcher's in-flight request polls the flag
-                # every ~100ms (and before/after each tool call) and raises
-                # Aborted, so it stops fast and can never speak afterward.
+                # Stop thinking: fire the sticky abort flag. The dispatcher's
+                # in-flight request polls the flag every ~100ms (and
+                # before/after each tool call) and raises Aborted, so it stops
+                # fast and can never keep running afterward.
                 abort_all()
                 # If no request is in flight, nobody will clear the abort flag
                 # for us — re-arm now so the next request isn't stuck.
@@ -914,27 +868,6 @@ async def websocket_endpoint(ws: WebSocket):
                     "type": "model_msg",
                     "text": f"Model switched to {label}.",
                 }))
-
-            elif msg_type == "set_mute":
-                try:
-                    muted = msg.get("muted", False)
-                    if muted != is_muted():
-                        toggle_mute()
-                    await ws.send_text(json.dumps({"type": "mute", "muted": is_muted()}))
-                except Exception as e:
-                    print(f"[WS] set_mute error: {e}")
-                    await ws.send_text(json.dumps({"type": "mute", "muted": is_muted()}))
-
-            elif msg_type == "set_listen":
-                global _listening_enabled
-                _listening_enabled = msg.get("listening", True)
-                if not _listening_enabled:
-                    from brain.wake import pause_wake_mic
-                    pause_wake_mic()
-                else:
-                    from brain.wake import resume_wake_mic
-                    resume_wake_mic()
-                await ws.send_text(json.dumps({"type": "listen", "listening": _listening_enabled}))
 
             elif msg_type == "schedule_list":
                 await ws.send_text(json.dumps({"type": "schedule", "events": schedule_list_events()}))

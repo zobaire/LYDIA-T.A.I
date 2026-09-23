@@ -34,7 +34,7 @@
 @echo off
 REM ============================================================
 REM  Lydia launcher
-REM  - starts the backend (voice + brain + server)
+REM  - starts the backend (brain + server; keyboard/UI only, no voice)
 REM  - opens the UI in its own app window
 REM  - CLOSE THE LYDIA WINDOW -> the whole system shuts down
 REM ============================================================

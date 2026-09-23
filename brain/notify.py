@@ -3,44 +3,31 @@
 Fires when a request fully completes (response text is final). Two outputs:
   1. play_done_sound()  — the stock Windows notification sound (winsound alias),
      so it feels native instead of some synth blip.
-  2. show_windows_toast() — a real notification balloon via PowerShell
-     NotifyIcon (no extra deps, works on Win10/11).
+  2. show_windows_toast() — a real notification balloon via PowerShell WinRT
+     (no extra deps, works on Win10/11).
 
 Both are gated by config.yaml -> notifications:
     notifications:
       done_sound: true
       done_toast: true
 
-Smart-skip logic: if Lydia is about to / currently reading the answer aloud,
-the voice itself IS the notification, so we stay quiet and avoid dinging over
-her speech. The "Speaking..." status broadcast + tts.is_speaking() tell us.
-Only when the reply is NOT spoken (muted, background task, remember, ...) do
-we chime + toast. Everything runs in daemon threads — never blocks the brain.
+NOTE (voice removal): this used to carry "smart-skip" logic that deliberately
+stayed silent when TTS was about to read the answer aloud — the reasoning
+being that speech WAS the notification. That whole branch is gone along with
+the voice pipeline, because with no TTS it would have suppressed every toast
+she ever fired. This module no longer imports anything from a voice subsystem;
+it is now the ONLY out-of-band cue that a task finished.
+
+Everything runs in daemon threads — never blocks the brain.
 """
 from __future__ import annotations
 import subprocess
 import sys
 import tempfile
 import threading
-import time
 from pathlib import Path
 
 from brain.config import load_config
-from brain.events import register
-from brain.tts import is_speaking
-
-# How long to wait for a "Speaking..." broadcast before assuming the reply
-# won't be voiced (slightly generous — the broadcast comes right after
-# process_request returns in every speak path).
-_SPEAK_GRACE_S = 2.5
-# After a Speaking broadcast, how long to wait for TTS to ACTUALLY start.
-# Muted paths broadcast Speaking... but never produce audio — those should
-# still notify instead of going silent.
-_MUTED_GRACE_S = 1.8
-
-_speaking_evt = threading.Event()
-_listener_armed = False
-_listener_lock = threading.Lock()
 
 
 def _flag(name: str, default: bool = True) -> bool:
@@ -76,30 +63,19 @@ def _clean_summary(text: str, limit: int = 150) -> str:
 def play_done_sound() -> None:
     """Play the stock Windows notification sound, non-blocking.
 
-    Falls back to a tiny two-tone chime (via sounddevice) if winsound isn't
-    available. Never raises.
+    winsound is part of the Windows stdlib, so there is no dependency and no
+    fallback synth path to maintain. Non-Windows is a silent no-op. Never raises.
     """
+    if sys.platform != "win32":
+        return
+
     def _play() -> None:
         try:
-            if sys.platform == "win32":
-                import winsound
-                # 'SystemNotification' = the modern Windows toast/chime sound.
-                winsound.PlaySound("SystemNotification", winsound.SND_ALIAS | winsound.SND_ASYNC)
-                return
-        except Exception:
-            pass
-        # Fallback: gentle synthesized double-blip.
-        try:
-            import numpy as np
-            import sounddevice as sd
-            t1 = np.linspace(0, 0.09, int(24000 * 0.09), endpoint=False)
-            t2 = np.linspace(0, 0.14, int(24000 * 0.14), endpoint=False)
-            tone = np.concatenate([
-                0.22 * np.sin(2 * np.pi * 880 * t1),
-                0.22 * np.sin(2 * np.pi * 1174.66 * t2),
-            ]).astype(np.float32)
-            sd.play(tone, samplerate=24000)
-            sd.wait()
+            import winsound
+            # 'SystemNotification' = the modern Windows toast/chime sound.
+            winsound.PlaySound(
+                "SystemNotification", winsound.SND_ALIAS | winsound.SND_ASYNC
+            )
         except Exception:
             pass
 
@@ -165,26 +141,12 @@ def show_windows_toast(title: str, message: str) -> None:
     threading.Thread(target=_toast, daemon=True).start()
 
 
-def _ensure_listener() -> None:
-    """Arm the single module-level listener watching for Speaking broadcasts."""
-    global _listener_armed
-    with _listener_lock:
-        if _listener_armed:
-            return
-        _listener_armed = True
-
-    def _watch(evt: dict) -> None:
-        if evt.get("type") == "status" and evt.get("message") == "Speaking...":
-            _speaking_evt.set()
-
-    register(_watch)
-
-
 def notify_done(response_text: str) -> None:
-    """Schedule the task-done notification for a finished response.
+    """Fire the task-done chime + toast for a finished response.
 
-    Skips cleanly when the reply is about to be (or is being) spoken aloud —
-    the speech is the cue then. Notifies only when the answer stays silent.
+    Called by every completion path (UI chat, console REPL, remember
+    short-circuit). There is nothing to suppress any more — no TTS means
+    every finished reply is genuinely silent, so the notification always fires.
     """
     if not response_text or not response_text.strip():
         return
@@ -192,39 +154,8 @@ def notify_done(response_text: str) -> None:
     toast_on = _flag("done_toast", True)
     if not sound_on and not toast_on:
         return
-    _ensure_listener()
-    # Only count a Speaking... broadcast that happens for THIS response —
-    # reset the sticky flag so a previous reply's broadcast can't confuse us.
-    _speaking_evt.clear()
-    threading.Thread(
-        target=_notify_worker, args=(response_text, sound_on, toast_on), daemon=True
-    ).start()
-
-
-def _notify_worker(response_text: str, sound_on: bool, toast_on: bool) -> None:
-    try:
-        # 1) Did a Speaking... broadcast arrive? (voice + web chat paths)
-        got_speaking = _speaking_evt.wait(_SPEAK_GRACE_S)
-
-        if got_speaking:
-            # 2) Speaking was announced — wait to see if TTS actually starts.
-            # If it does, she's reading the answer: no extra cue needed.
-            deadline = time.time() + _MUTED_GRACE_S
-            while time.time() < deadline:
-                if is_speaking():
-                    return  # real speech — skip, voice is the notification
-                time.sleep(0.1)
-            # Announced but never spoke (muted path) → fall through to notify.
-        else:
-            # No Speaking broadcast (terminal F2 path, remember replies, ...).
-            # Double-check she isn't mid-audio anyway before we ding.
-            if is_speaking():
-                return
-
-        summary = _clean_summary(response_text)
-        if sound_on:
-            play_done_sound()
-        if toast_on:
-            show_windows_toast("Lydia — done", summary)
-    except Exception:
-        pass
+    summary = _clean_summary(response_text)
+    if sound_on:
+        play_done_sound()
+    if toast_on:
+        show_windows_toast("Lydia — done", summary)

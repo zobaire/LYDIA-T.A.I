@@ -5,8 +5,6 @@ python-dotenv>=1.0
 requests>=2.31
 websockets>=12
 numpy>=1.26
-sounddevice>=0.4.6
-edge-tts>=6.1
 pyautogui>=0.9.54
 chromadb>=0.5.0
 sqlalchemy>=2.0
@@ -15,10 +13,6 @@ pillow>=10.0
 mss>=9.0
 ddgs>=3.0
 discord.py>=2.3
-# Local STT (default provider since 2026-09-02 — config.yaml stt.provider: local)
-faster-whisper>=1.0.3
-# On-device wake word (enabled by default in config.yaml wake_word.enabled: true)
-openwakeword>=0.6.0
-onnxruntime>=1.17
-# Optional: pyaudio only needed for custom audio input setups
-# pyaudio>=0.2.13
+# --- Voice pipeline removed 2026-09-23 (keyboard + UI only) ---
+# Dropped with it: edge-tts, sounddevice, faster-whisper, openwakeword,
+# onnxruntime, pyaudio. numpy stays — it is a transitive dep of chromadb/PIL.

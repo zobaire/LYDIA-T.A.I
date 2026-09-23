@@ -9,8 +9,14 @@ echo        Lydia - One-Time Setup
 echo ============================================
 echo.
 
+REM ============================================================
+REM  NOTE: ffmpeg is no longer required. It was only installed so the
+REM  old TTS module could decode MP3 to PCM. The voice pipeline was
+REM  removed 2026-09-23 (keyboard + UI only), so this step is gone.
+REM ============================================================
+
 REM ---- Check Python ----
-echo [1/5] Checking Python...
+echo [1/4] Checking Python...
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo   Python NOT found. Installing via winget...
@@ -30,27 +36,8 @@ if %errorlevel% neq 0 (
 
 echo.
 
-REM ---- Check ffmpeg ----
-echo [2/5] Checking ffmpeg...
-ffmpeg -version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo   ffmpeg NOT found. Installing via winget...
-    winget install -e --id Gyan.FFmpeg --accept-source-agreements --accept-package-agreements
-    if !errorlevel! neq 0 (
-        echo   [WARN] Could not install ffmpeg automatically.
-        echo   Install it manually from https://ffmpeg.org/download.html
-        echo   and add the bin folder to PATH.
-    ) else (
-        echo   ffmpeg installed. Restart this window to refresh PATH.
-    )
-) else (
-    echo   ffmpeg found.
-)
-
-echo.
-
 REM ---- Check browser ----
-echo [3/5] Checking browser...
+echo [2/4] Checking browser...
 set BROWSER=
 if exist "%LocalAppData%\BraveSoftware\Brave-Browser\Application\brave.exe" set BROWSER=Brave
 if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set BROWSER=Chrome
@@ -68,7 +55,7 @@ if defined BROWSER (
 echo.
 
 REM ---- Install Python deps ----
-echo [4/5] Installing Python dependencies...
+echo [3/4] Installing Python dependencies...
 python -m pip install --upgrade pip >nul 2>&1
 python -m pip install -r requirements.txt
 if %errorlevel% neq 0 (
@@ -81,7 +68,7 @@ echo   Dependencies installed.
 echo.
 
 REM ---- Check .env ----
-echo [5/5] Checking .env file...
+echo [4/4] Checking .env file...
 if exist ".env" (
     echo   .env found. Good.
 ) else (
