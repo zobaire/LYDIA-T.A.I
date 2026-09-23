@@ -14,6 +14,10 @@ imports/
 user_data/
 *.log
 
+# ---- Runtime state (regenerated from _DEFAULTS in trading/settings.py) ----
+trading/settings.json
+trading/watchlist.json
+
 # ---- Backups (contain .env copies) ----
 _phase1_backup/
 _phase2_backup/
@@ -30,6 +34,8 @@ venv/
 .ruff_cache/
 
 # ---- Scratch / debug ----
+*.zip
+_scratch/
 test_spot.py
 check_spot_debug.py
 out.txt
